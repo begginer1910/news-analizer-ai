@@ -1,0 +1,9 @@
+# Plik z kluczami API (Tego nie chcemy upubliczniać!)
+.env
+
+# Baza danych (Lepiej trzymać ją lokalnie, na GitHubie chcemy tylko kod)
+*.db
+
+# Foldery tymczasowe Pythona
+__pycache__/
+*.pycgit add .
