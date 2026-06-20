@@ -1,14 +1,9 @@
-from datetime import datetime
-
-import requests
-import os
-from dotenv import load_dotenv
+import httpx
 class NewsApiClient:
-    def __init__(self):
-        load_dotenv()
-        self.api_key = os.getenv("NEWS_API_KEY")
+    def __init__(self, api_key:str):
+        self.api_key = api_key
+    async def get_news(self,selected_category,selected_language,selected_country):
         self.url = "https://newsapi.org/v2/top-headlines"
-    def get_news(self,selected_category,selected_language,selected_country):
         params = {
             "apiKey" : self.api_key,
             "category" : selected_category,
@@ -17,9 +12,12 @@ class NewsApiClient:
             "pageSize" : 5
         }
         try:
-            response = requests.get(self.url, params=params)
-            response.raise_for_status()
-            return response.json().get('articles', [])
+            async with httpx.AsyncClient() as client:
+                response = await client.get(self.url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                articles = data.get("articles")
+                return articles if isinstance(articles, list) else []
         except Exception as e:
             print(f"Error with API : {e}")
             return []

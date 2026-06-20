@@ -1,0 +1,8 @@
+groq
+httpx
+python-dotenv
+aiosqlite
+pytest
+pytest-asyncio
+respx
+python-telegram-bot
