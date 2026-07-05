@@ -23,7 +23,7 @@ async def simulate_api_response(respx_mock, status_code, response_data):
 
 async def test_api(respx_mock, status, data, expected_len):
     await simulate_api_response(respx_mock, status, data)
-    client = NewsApiClient()
+    client = NewsApiClient("dummy_key")
     result = await client.get_news("general", "en", "us")
     assert len(result) == expected_len
 
@@ -31,7 +31,7 @@ async def test_api(respx_mock, status, data, expected_len):
 @pytest.mark.asyncio
 async def test_correct_params(respx_mock):
     route = respx_mock.get("https://newsapi.org/v2/top-headlines").respond(json={"articles": []})
-    client = NewsApiClient()
+    client = NewsApiClient("dummy_key")
     await client.get_news("business", "en", "us")
     request = route.calls.last.request
     assert request.url.params["category"] == "business"

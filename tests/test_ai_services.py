@@ -12,7 +12,7 @@ async def test_summarize_via_http(respx_mock):
             "choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content":'{"summary": "ok", "sentiment":1}'}}]
         }
     )
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     result = await ai.summarize("test title", "test description", "english")
     assert result["summary"] == "ok"
 
@@ -22,7 +22,7 @@ async def test_wrong_json(respx_mock):
     respx_mock.post("https://api.groq.com/openai/v1/chat/completions").respond(
         text = "not a json"
     )
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     result = await ai.summarize("test title", "test description", "english")
     assert result == {"summary": "", "sentiment": 0}
 
@@ -36,7 +36,7 @@ async def test_no_summary_or_sentiment(respx_mock, content, missing_key):
     respx_mock.post("https://api.groq.com/openai/v1/chat/completions").respond(
         json={"choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": content}}]}
     )
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     result = await ai.summarize("test title", "test description", "english")
     assert result == {"summary": "", "sentiment": 0}
 
@@ -53,7 +53,7 @@ async def test_network_error(respx_mock, status_code, side_effect):
         route.mock(side_effect=side_effect)
     else:
         route.respond(status_code=status_code)
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     result = await ai.summarize("test title", "test description", "english")
     assert result == {"summary": "", "sentiment": 0}
 
@@ -66,7 +66,7 @@ async def test_empty_input_data(respx_mock):
                          "message": {"role": "assistant", "content": '{"summary": "", "sentiment":0}'}}]
         }
     )
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     result = await ai.summarize("", "", "")
     assert result == {"summary": "", "sentiment": 0}
 
@@ -78,7 +78,7 @@ async def test_check_prompt(respx_mock):
                          "message": {"role": "assistant", "content": '{"summary": "hello", "sentiment":1}'}}]
                 }
     )
-    ai = Groq_ai()
+    ai = Groq_ai("dummy_key")
     await ai.summarize("test title", "test description", "english")
     request = route.calls.last.request
     body = request.content.decode()
