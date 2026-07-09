@@ -6,3 +6,5 @@ pytest
 pytest-asyncio
 respx
 python-telegram-bot
+fastapi
+uvicorn

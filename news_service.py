@@ -4,11 +4,11 @@ from ai_service import Groq_ai
 from config import Config
 
 class AnalizeNews:
-    def __init__(self):
+    def __init__(self, database: Database | None = None):
         conf = Config()
         self.news_client = NewsApiClient(conf.NEWS_API_KEY)
         self.ai = Groq_ai(conf.GROQ_API_KEY)
-        self.data = Database(conf.DB_PATH)
+        self.data = database or Database(conf.DB_PATH)
 
     async def start(self, category, language, country):
         await self.data.initialize()

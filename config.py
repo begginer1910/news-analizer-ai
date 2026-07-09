@@ -10,6 +10,8 @@ class Config:
         self.GROQ_API_KEY = os.getenv("GROQ_API_KEY")
         self.DB_PATH = os.getenv("DB_PATH", "news.db")
         self.TELEGRAM_API_KEY = os.getenv("TELEGRAM_API_KEY")
+        self.API_HOST = os.getenv("API_HOST", "0.0.0.0")
+        self.API_PORT = int(os.getenv("API_PORT", "8000"))
         self._validate()
     def _validate(self):
         missing = []
