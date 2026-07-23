@@ -1,6 +1,10 @@
+from logging_config import setup_logging
+setup_logging()
 import asyncio
 from auxiliary_functions import Auxiliary
 from news_service import AnalizeNews
+import logging
+logger = logging.getLogger(__name__)
 
 class Main:
     def __init__(self):
@@ -11,30 +15,35 @@ class Main:
             category = await asyncio.to_thread(self.helper.text, "Enter a category")
             category = self.helper.validate_category(category)
             if category:break
-            print("Invalid category")
+            print(f"Invalid category, available:{self.helper.validcategories} ")
+            logger.debug(f"User enter invalid category:{category}, should give: {self.helper.validcategories}")
         while True:
             language = await asyncio.to_thread(self.helper.text,"Enter a language")
             language = self.helper.validate_language(language)
             if language:break
-            print("Invalid language")
+            print(f"Invalid language, available: {self.helper.avaible_languages} ")
+            logger.debug(f"User enter invalid language: {language}, should give:{self.helper.avaible_languages}")
         while True:
             country = await asyncio.to_thread(self.helper.text,"Enter a country")
             country = self.helper.validate_country(country)
             if country:break
-            print("Invalid country")
+            print("Invalid country, enter full name of country for example: Poland , France")
+            logger.debug("User enter invalid country")
         return category, language, country
     async def summation(self):
         category, language, country = await self.valid_data()
         results = await self.analize.start(category, language, country)
         if not results:
             print("Article not found")
+            logger.info("Article not found")
         for r in results:
             print(f"{r['status']}: {r['title']}")
+            logger.info(f"{r['status']}: {r['title']}")
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(Main().summation())
     except ValueError as e:
-        print(f"Error: {e}")
+        logging.error(f"Error: {e}")
         exit(1)

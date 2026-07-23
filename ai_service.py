@@ -1,6 +1,7 @@
 import json
 from groq import AsyncGroq
-
+import logging
+logger = logging.getLogger(__name__)
 
 class Groq_ai:
     def __init__(self, api_key:str):
@@ -38,7 +39,7 @@ class Groq_ai:
             return result
 
         except Exception as e:
-            print(f"Error AI: {e}")
+            logger.critical(f"Error AI: {e}")
             return {"summary": "", "sentiment": 0}
 
 

@@ -2,6 +2,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler
 from news_service import AnalizeNews
 from auxiliary_functions import Auxiliary
+import logging
+logger = logging.getLogger(__name__)
 CATEGORY, LANGUAGE, COUNTRY = range(3)
 
 class TelegramBot:
@@ -22,15 +24,18 @@ class TelegramBot:
         )
         self.app.add_handler(conv_handler)
     def run(self):
+        logger.info("Starting Telegram bot polling")
         self.app.run_polling()
     async def cancel(self,update: Update, context):
         await update.message.reply_text("canceled")
+        logger.info("User cancelled the conversation")
         return ConversationHandler.END
     async def start(self, update: Update, context):
         await update.message.reply_text(
             "Hello! Please enter a news category:\n"
             f"{','.join(self.helper.validcategories)}"
         )
+        logger.info("User started conversation, asking for category")
         return CATEGORY
 
     async def category_handler(self,update:Update, context):
@@ -38,8 +43,10 @@ class TelegramBot:
         valid = self.helper.validate_category(text)
         if not valid:
             await update.message.reply_text("Invalid category, please try again")
+            logger.warning("User entered invalid category: %s", text)
             return CATEGORY
         context.user_data["category"] = valid
+        logger.debug("User selected category: %s", valid)
         await update.message.reply_text(
             "Please enter your language:\n" + ",".join(self.helper.avaible_languages.keys())
         )
@@ -49,8 +56,10 @@ class TelegramBot:
         valid = self.helper.validate_language(text)
         if not valid:
             await update.message.reply_text("Invalid language, please try again")
+            logger.warning("User entered invalid language: %s", text)
             return LANGUAGE
         context.user_data["language"] = valid
+        logger.debug("User selected language: %s", valid)
         await update.message.reply_text(
             "Please enter your country:\n" +",".join(self.helper.countries.keys())
         )
@@ -60,6 +69,7 @@ class TelegramBot:
         valid = self.helper.validate_country(text)
         if not valid:
             await update.message.reply_text("Invalid country, please try again")
+            logger.warning("User entered invalid country: %s", text)
             return COUNTRY
         context.user_data["country"] = valid
         category = context.user_data["category"]
@@ -69,11 +79,15 @@ class TelegramBot:
             results = await self.analyze.start(category, language, country)
             if not results:
                 await update.message.reply_text("Article not found")
+                logger.info("No articles found for category=%s, language=%s, country=%s", 
+                           category, language, country)
             else:
                 for r in results:
                     await update.message.reply_text(f"{r['status']}: {r['title']}")
+                    logger.info("Article result: %s - %s", r['status'], r['title'])
         except Exception as e:
             await update.message.reply_text(f"Error: {e}")
+            logger.error("Error processing news request: %s", e, exc_info=True)
         return ConversationHandler.END
 
 

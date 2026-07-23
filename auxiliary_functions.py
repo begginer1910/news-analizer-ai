@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 class Auxiliary:
     def __init__(self):
         self.avaible_languages = {
@@ -37,15 +40,14 @@ class Auxiliary:
             if self.t:
                 return self.t
             print("It can't be empty")
+            logger.info("User entry empty input")
     def numbers(self, msg):
         while True:
             try:
                 return int(input(msg))
             except ValueError:
                 print("Enter a number !!")
-            except EOFError:
-                print("No input provided")
-                return None
+                logger.info("User entry wrong input")
     def validate_language(self, language: str):
         language = language.lower().strip()
         if language in self.avaible_languages:

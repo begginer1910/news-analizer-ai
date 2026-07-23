@@ -1,4 +1,6 @@
 import httpx
+import logging
+logger = logging.getLogger(__name__)
 class NewsApiClient:
     def __init__(self, api_key:str):
         self.api_key = api_key
@@ -19,7 +21,7 @@ class NewsApiClient:
                 articles = data.get("articles")
                 return articles if isinstance(articles, list) else []
         except Exception as e:
-            print(f"Error with API : {e}")
+            logger.critical(f"Error with API : {e}")
             return []
 
 

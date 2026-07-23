@@ -1,4 +1,6 @@
 import aiosqlite
+import logging 
+logger = logging.getLogger(__name__)
 
 class Database:
     def __init__(self, db_path:str):
@@ -22,7 +24,7 @@ class Database:
                     ) 
                 """)
         await self.conn.commit()
-        print("Table created")
+        logger.info("Table created")
 
     async def add_article(self, data):
         new = ("INSERT INTO table_news (title, url, category, language, country, summary, sentiment, publishedAt)"
