@@ -2,6 +2,9 @@ from database import Database
 from api_client import NewsApiClient
 from ai_service import Groq_ai
 from config import Config
+from exceptions import NewsAPIError, AIServiceError
+import logging
+logger = logging.getLogger(__name__)
 
 class AnalizeNews:
     def __init__(self, database: Database | None = None):
@@ -45,9 +48,23 @@ class AnalizeNews:
                 "sentiment": data['sentiment'],
                 "status": status,
             }
-        except Exception as e:
+        except NewsAPIError as e:
+            logger.warning(f"NewsAPI error processed: {e}")
+            return {"title": article.get('title', 'unknown'),
+                    "status": "error",
+                    "error": "Failed to retrieve messages from the source. Please try again later."                   
+                    }
+        except AIServiceError as e:
+            logger.warning(f"AI service error processsed: {e}")
             return {
                 "title": article.get('title', 'unknown'),
                 "status": "error",
-                "error": str(e),
+                "error":"The message could not be processed. Please try again later."
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error processing article: {e}", exc_info=True)
+            return {
+                "title": article.get('title', 'unknown'),
+                "status": "error",
+                "error": "An unexpected error occurred. Please contact the administrator.",
             }
