@@ -1,5 +1,7 @@
 import json
-from groq import AsyncGroq
+from groq import AsyncGroq 
+from groq import (APIConnectionError, APITimeoutError, RateLimitError, InternalServerError, APIError)
+from exceptions import AIServiceError
 import logging
 logger = logging.getLogger(__name__)
 
@@ -35,11 +37,25 @@ class Groq_ai:
         )
             result = json.loads(chat_completion.choices[0].message.content)
             if "summary" not in result or "sentiment" not in result:
-                return {"summary": "", "sentiment": 0}
+                raise ValueError("AI response missing required fields")
             return result
-
-        except Exception as e:
-            logger.critical(f"Error AI: {e}")
-            return {"summary": "", "sentiment": 0}
-
+        except(APIConnectionError, APITimeoutError) as exc:
+            logger.error(f"Groq connection/timeout error: {exc}")
+            raise AIServiceError(f"Network error: {exc}") from exc
+        except RateLimitError as exc:
+            logger.warning(f"Groq rate limit exceeded: {exc}")
+            raise AIServiceError("Rate limit exceeded - try again later") from exc
+        except InternalServerError as exc:
+            logger.error(f"Groq internal server error: {exc}")
+            raise AIServiceError("AI service internal error") from exc
+        except APIError as exc:
+            logger.error(f"Groq API error: {exc}")
+            raise AIServiceError(f"AI API error: {exc}") from exc
+        except ValueError as exc:
+            logger.error(f"Invalid AI response structure: {exc}")
+            raise AIServiceError("AI response missing required data") from exc
+        except Exception as exc:
+            logger.critical(f"Unexpected error in AI service: {exc}", exc_info=True)
+            raise AIServiceError(f"Unexpected error in: {exc}") from exc
+        
 

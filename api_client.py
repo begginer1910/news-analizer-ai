@@ -1,3 +1,4 @@
+from exceptions import NewsAPIError
 import httpx
 import logging
 logger = logging.getLogger(__name__)
@@ -18,10 +19,18 @@ class NewsApiClient:
                 response = await client.get(self.url, params=params)
                 response.raise_for_status()
                 data = response.json()
-                articles = data.get("articles")
-                return articles if isinstance(articles, list) else []
-        except Exception as e:
-            logger.critical(f"Error with API : {e}")
-            return []
-
+        except httpx.HTTPStatusError as exc:
+                logger.error(f"NewsAPI HTTP error {exc.response.status_code}: {exc.response.text}")
+                raise NewsAPIError(f"NewsAPI error {exc.response.status_code}") from exc
+        except httpx.RequestError as exc:
+                logger.error(f"NewsAPI request failed: {exc}")
+                raise NewsAPIError(f"Network error: {str(exc)}") from exc
+        except ValueError as exc:
+                logger.error(f"Invalid JSON from NewsAPI: {exc}")
+                raise NewsAPIError("Invalid response format from NewsAPI") from exc
+        articles = data.get("articles")
+        if not isinstance(articles,list):
+              logger.error("expected 'articles' list in NewsAPI reponse")
+              raise NewsAPIError("Invalid response structure from NewsAPI")
+        return articles
 
