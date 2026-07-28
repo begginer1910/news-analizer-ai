@@ -7,7 +7,6 @@ from contextlib import asynccontextmanager
 from .dependencies import init_deps
 from .routes import router
 
-
 def create_app(config=None):
     conf = config or Config()
     data = Database(conf.DB_PATH)

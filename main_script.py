@@ -35,10 +35,15 @@ class Main:
         results = await self.analize.start(category, language, country)
         if not results:
             print("Article not found")
-            logger.info("Article not found")
-        for r in results:
-            print(f"{r['status']}: {r['title']}")
-            logger.info(f"{r['status']}: {r['title']}")
+            logger.info("No articles found for the specified criteria.")
+        else:
+            for r in results:
+                if r["status"] == "error":
+                    print(f"Error: {r.get('error', 'unknown eror')}")
+                    logger.warning(f"Article processing error: {r.get('error')}")
+                else:
+                    print(f"{r['status']}: {r['title']}")
+                    logger.info(f"Result: {r['status']} - {r['title']}")
 
 
 if __name__ == "__main__":

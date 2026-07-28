@@ -78,15 +78,20 @@ class TelegramBot:
         try:
             results = await self.analyze.start(category, language, country)
             if not results:
-                await update.message.reply_text("Article not found")
+                await update.message.reply_text("No articles were found matching the specified criteria.")
                 logger.info("No articles found for category=%s, language=%s, country=%s", 
                            category, language, country)
             else:
                 for r in results:
-                    await update.message.reply_text(f"{r['status']}: {r['title']}")
-                    logger.info("Article result: %s - %s", r['status'], r['title'])
+                    if r["status"] == "error":
+                        error_msg = r.get("error", "An unexpected error occurred.")    
+                        await update.message.reply_text(f"Error: {error_msg}")
+                        logger.warning("Article result: %s - %s", r['status'], r['title'])
+                    else:
+                        await update.message.reply_text(f"{r['status']}: {r['title']}")
+                        logger.info("Result: %s – %s", r['status'], r['title'])
         except Exception as e:
-            await update.message.reply_text(f"Error: {e}")
+            await update.message.reply_text(f"We apologize, an internal error occurred. Please try again later.")
             logger.error("Error processing news request: %s", e, exc_info=True)
         return ConversationHandler.END
 
