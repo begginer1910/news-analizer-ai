@@ -77,7 +77,7 @@ async def test_country_handler_empty_result():
     context.user_data = {"category": "technology","language": "en" }
     bot = TelegramBot("fake-token",analyze_mock, Auxiliary())
     result = await bot.country_handler(update,context)
-    update.message.reply_text.assert_called_once_with("Article not found")
+    update.message.reply_text.assert_called_once_with("No articles were found matching the specified criteria.")
     assert result == ConversationHandler.END
 
 @pytest.mark.asyncio
@@ -111,5 +111,5 @@ async def test_country_handler_error():
     context.user_data = {"category": "technology", "language": "en"}
     bot = TelegramBot("fake-token", analyze_mock, Auxiliary())
     result = await bot.country_handler(update, context)
-    update.message.reply_text.assert_awaited_once_with("Error: API fail")
+    update.message.reply_text.assert_awaited_once_with("We apologize, an internal error occurred. Please try again later.")
     assert result == ConversationHandler.END

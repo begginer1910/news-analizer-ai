@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock
 from news_service import AnalizeNews
+from exceptions import AIServiceError
 
 
 def create_service(monkeypatch):
@@ -90,18 +91,20 @@ async def test_start_multiple_articles(monkeypatch):
 @pytest.mark.asyncio
 async def test_proces_article_ai_error(monkeypatch):
     service = create_service(monkeypatch)
-    service.ai.summarize = AsyncMock(side_effect=ValueError("AI failed"))
+    service.ai.summarize = AsyncMock(side_effect=AIServiceError("AI failed"))
     service.data.add_article = AsyncMock()
 
     article = {
-        "title": "Test", "description": "Desc",
-        "url": "https://test.com", "publishedAt": "2024-01-01",
+        "title": "Test",
+        "description": "Desc",
+        "url": "https://test.com",
+        "publishedAt": "2024-01-01",
     }
     result = await service.proces_article(article, "general", "en", "us")
 
     assert result["title"] == "Test"
     assert result["status"] == "error"
-    assert "AI failed" in result["error"]
+    assert result["error"] == "The message could not be processed. Please try again later."
     service.data.add_article.assert_not_awaited()
 
 
@@ -112,8 +115,10 @@ async def test_proces_article_passes_correct_data_to_database(monkeypatch):
     service.data.add_article = AsyncMock(return_value="saved")
 
     article = {
-        "title": "Title", "description": "Desc",
-        "url": "https://url.com", "publishedAt": "2024-01-01",
+        "title": "Title",
+        "description": "Desc",
+        "url": "https://url.com",
+        "publishedAt": "2024-01-01",
     }
     await service.proces_article(article, "tech", "en", "us")
 
