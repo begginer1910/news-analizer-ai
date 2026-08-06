@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import httpx
 
 class Auxiliary:
     def __init__(self):
@@ -67,4 +68,9 @@ class Auxiliary:
         if country in self.countries.values():
             return country
         return None
-
+    def is_retryable(self,exc: Exception) -> bool:
+        if isinstance(exc, httpx.RequestError):
+            return True
+        if isinstance(exc, httpx.HTTPStatusError):
+            return exc.response.status_code in {429,500,502,503,504}
+        return False
