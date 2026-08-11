@@ -6,10 +6,49 @@ class Database:
     def __init__(self, db_path:str):
         self.db_path = db_path
         self.conn = None
+    async def _create_scheduler_config_table(self):
+        await self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS scheduler_config (
+                id INTEGER PRIMARY KEY CHECK (id =1),
+                category TEXT NOT NULL,
+                language TEXT NOT NULL,
+                country TEXT NOT NULL,
+                interval_h INTEGER NOT NULL
+                )
+            """)
+        await self.conn.commit()
+    async def _fetch_scheduler_config_row(self):
+        cursor = await self.conn.execute(
+            "SELECT category, language, country, interval_h FROM scheduler_config WHERE id = 1"
+        )
+        return await cursor.fetchone()
+
+    async def _update_scheduler_config_row(
+        self,
+        category: str,
+        language: str,
+        country: str,
+        interval_h: int,
+    ):
+       await self.conn.execute(
+            """
+            UPDATE scheduler_config
+            SET category = ?, language = ?, country = ?, interval_h = ?
+            WHERE id = 1
+            """,
+            (category, language, country, interval_h),
+        )
+       await self.conn.commit()
     async def initialize(self):
         if self.conn is not None:
             return
         self.conn = await aiosqlite.connect(self.db_path)
+        await self._create_scheduler_config_table()
+        await self.conn.execute("""
+            INSERT OR IGNORE INTO scheduler_config (id, category, language, country, interval_h)
+            VALUES (1, 'general', 'en', 'us', 24)
+        """)
+        await self.conn.commit()
         await self.conn.execute("""
                     CREATE TABLE IF NOT EXISTS table_news (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +63,7 @@ class Database:
                     ) 
                 """)
         await self.conn.commit()
-        logger.info("Table created")
+        logger.info("Tables created")
 
     async def add_article(self, data):
         new = ("INSERT INTO table_news (title, url, category, language, country, summary, sentiment, publishedAt)"
@@ -54,4 +93,3 @@ class Database:
             )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
-

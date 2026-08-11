@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
-from .schemas import FetchRequest, FetchResult, ArticleResponse
+from .schemas import FetchRequest, FetchResult, ArticleResponse, SchedulerConfigIn, SchedulerConfigOut
 from .dependencies import get_db, get_service, get_helper
 from database import Database
 from news_service import AnalizeNews
 from auxiliary_functions import Auxiliary
+from Scheduler.scheduler_config_service import SchedulerConfigService
 
 router = APIRouter()
 
@@ -44,3 +45,12 @@ async def export_csv(category:str | None = None, limit: int = 20, database:Datab
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=articles.csv"},
     )
+@router.get("/api/scheduler/config", response_model=SchedulerConfigOut)
+async def get_scheduler_config(db:Database = Depends(get_db)):
+    svc = SchedulerConfigService(db)
+    return await svc.get()
+
+@router.put("/api/scheduler/config", response_model=SchedulerConfigOut)
+async def update_scheduler_config(payload:SchedulerConfigIn, db: Database = Depends(get_db)):
+    svc = SchedulerConfigService(db)
+    return await svc.update(category=payload.category, language=payload.language, country=payload.country, interval_h=payload.interval_h,)

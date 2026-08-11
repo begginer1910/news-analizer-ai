@@ -6,6 +6,8 @@ from config import Config
 from contextlib import asynccontextmanager
 from .dependencies import init_deps
 from .routes import router
+import asyncio
+from Scheduler.scheduler import start_scheduler
 
 def create_app(config=None):
     conf = config or Config()
@@ -17,6 +19,7 @@ def create_app(config=None):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await data.initialize()
+        asyncio.create_task(start_scheduler(data))
         yield
         await data.conn.close()
     app = FastAPI(lifespan=lifespan)

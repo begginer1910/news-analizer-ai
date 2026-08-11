@@ -12,6 +12,10 @@ class Config:
         self.TELEGRAM_API_KEY = os.getenv("TELEGRAM_API_KEY")
         self.API_HOST = os.getenv("API_HOST", "0.0.0.0")
         self.API_PORT = int(os.getenv("API_PORT", "8000"))
+        self.JOB_CATEGORY = os.getenv("JOB_CATEGORY", "general")
+        self.JOB_LANGUAGE = os.getenv("JOB_LANGUAGE", "en")
+        self.JOB_COUNTRY = os.getenv("JOB_COUNTRY", "us")
+        self.JOB_INTERVAL_H = int(os.getenv("JOB_INTERVAL_H", "24"))
         self._validate()
     def _validate(self):
         missing = []

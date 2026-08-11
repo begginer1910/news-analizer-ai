@@ -8,3 +8,4 @@ respx
 python-telegram-bot
 fastapi
 uvicorn
+APScheduler

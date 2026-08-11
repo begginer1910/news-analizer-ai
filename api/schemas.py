@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class FetchRequest(BaseModel):
     category: str
@@ -21,3 +21,12 @@ class FetchResult(BaseModel):
     summary: str
     sentiment: int
     status: str
+
+class SchedulerConfigIn(BaseModel):
+    category:str
+    language:str
+    country:str
+    interval_h:int = Field(...,gt=0)
+
+class SchedulerConfigOut(SchedulerConfigIn):
+    pass
