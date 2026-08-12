@@ -48,4 +48,21 @@ async def test_add_article_duplicated(db):
     result = await db.add_article(SAMPLE_DATA)
     assert result == "duplicated"
 
+@pytest.mark.asyncio
+async def test_initialize_creates_scheduler_config_table(db):
+    cursor = await db.conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='scheduler_config'")
+    row = await cursor.fetchone()
+    assert row is not None
+
+@pytest.mark.asyncio
+async def test_initialize_creates_default_config(db):
+    row = await db._fetch_scheduler_config_row()
+    assert row == ("general", "en", "us", 24)
+
+@pytest.mark.asyncio
+async def test_update_scheduler_config_row(db):
+    await db._update_scheduler_config_row("technology", "pl", "pl", 12)
+    row = await db._fetch_scheduler_config_row()
+    assert row == ("technology", "pl", "pl", 12)
+
 

@@ -1,5 +1,8 @@
 import pytest
-from config import Config
+from config import Config, ALLOWED_INTERVALS_H
+
+def test_allowed_intervals_h_constant():
+    assert ALLOWED_INTERVALS_H == (12, 24)
 
 def test_config_creates_succesfully(monkeypatch):
     monkeypatch.setenv("NEWS_API_KEY", "test_news")
