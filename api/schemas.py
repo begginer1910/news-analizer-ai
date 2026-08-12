@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Literal
 
 class FetchRequest(BaseModel):
     category: str
@@ -26,7 +27,7 @@ class SchedulerConfigIn(BaseModel):
     category:str
     language:str
     country:str
-    interval_h:int = Field(...,gt=0)
+    interval_h:Literal[12, 24]
 
 class SchedulerConfigOut(SchedulerConfigIn):
     pass

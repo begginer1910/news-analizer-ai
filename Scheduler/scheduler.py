@@ -1,29 +1,36 @@
-from scheduler_config_service import SchedulerConfigService
-from logging_config import setup_logging
-setup_logging()
 import asyncio
 import logging
+from logging_config import setup_logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .jobs import run_news_job
+from .scheduler_config_service import SchedulerConfigService
 from database import Database
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
-async def start_scheduler(db:Database):
+async def create_scheduler(cfg_service: SchedulerConfigService) -> AsyncIOScheduler:
+    cfg = await cfg_service.get()
     scheduler = AsyncIOScheduler()
-    cfg_service = SchedulerConfigService(db)
+
     async def job():
-        cfg = await cfg_service.get()
+        current = await cfg_service.get()
         logger.info("Starting new job: %s/%s/%s (interval=%sh)",
-                    cfg["category"], cfg["language"], cfg["country"], cfg["interval_h"])
-        await run_news_job(**cfg)
+                    current["category"], current["language"], current["country"], current["interval_h"])
+        await run_news_job(current["category"], current["language"], current["country"])
+
     scheduler.add_job(
         job,
         trigger="interval",
-        hours=24,
+        hours=cfg["interval_h"],
         id="news_job",
-        replace_existing=True
+        replace_existing=True,
     )
+    return scheduler
+
+async def start_scheduler(db: Database):
+    scheduler = await create_scheduler(SchedulerConfigService(db))
     scheduler.start()
     logger.info("Scheduler started")
     try:
@@ -31,8 +38,3 @@ async def start_scheduler(db:Database):
     except (KeyboardInterrupt, SystemExit):
         logger.info("Stopping scheduler")
         scheduler.shutdown()
-
-if __name__ == "__main__":
-    asyncio.run(start_scheduler())
-
-
