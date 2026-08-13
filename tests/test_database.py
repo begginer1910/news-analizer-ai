@@ -1,5 +1,5 @@
 import pytest
-from database import Database
+from app.database import Database
 
 @pytest.fixture
 async def db():

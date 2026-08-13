@@ -1,10 +1,10 @@
-from exceptions import NewsAPIError
+from app.exceptions import NewsAPIError
 import httpx
 import logging
 logger = logging.getLogger(__name__)
 import asyncio
 import random
-from auxiliary_functions import Auxiliary
+from app.auxiliary_functions import Auxiliary
 class NewsApiClient:
     def __init__(self, api_key:str):
         self.api_key = api_key

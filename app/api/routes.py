@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from .schemas import FetchRequest, FetchResult, ArticleResponse, SchedulerConfigIn, SchedulerConfigOut
 from .dependencies import get_db, get_service, get_helper
-from database import Database
-from news_service import AnalizeNews
-from auxiliary_functions import Auxiliary
-from Scheduler.scheduler_config_service import SchedulerConfigService
+from app.database import Database
+from app.services.news_service import AnalizeNews
+from app.auxiliary_functions import Auxiliary
+from app.scheduler.scheduler_config_service import SchedulerConfigService
 
 router = APIRouter()
 

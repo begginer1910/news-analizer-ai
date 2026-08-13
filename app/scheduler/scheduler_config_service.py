@@ -1,5 +1,5 @@
-from database import Database
-from config import ALLOWED_INTERVALS_H
+from app.database import Database
+from app.config import ALLOWED_INTERVALS_H
 
 class SchedulerConfigService:
     def __init__(self, db: Database):

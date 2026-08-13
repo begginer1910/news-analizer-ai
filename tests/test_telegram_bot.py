@@ -2,8 +2,8 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, call
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
-from telegram_bot import TelegramBot, CATEGORY, LANGUAGE, COUNTRY
-from auxiliary_functions import Auxiliary
+from app.bots.telegram_bot import TelegramBot, CATEGORY, LANGUAGE, COUNTRY
+from app.auxiliary_functions import Auxiliary
 
 @pytest.mark.asyncio
 async def test_start_handler():

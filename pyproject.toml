@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analize-news"
+version = "0.1.0"
+description = "Download and summarize news by AI"
+requires-python = ">=3.11"
+dependencies = [
+    "groq",
+    "httpx",
+    "python-dotenv",
+    "aiosqlite",
+    "python-telegram-bot",
+    "fastapi",
+    "uvicorn",
+    "APScheduler",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[project.scripts]
+analize-news = "app.cli:main"
+analize-news-bot = "app.bots.run_bot:main"

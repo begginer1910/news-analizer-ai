@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock
-from news_service import AnalizeNews
-from exceptions import AIServiceError
+from app.services.news_service import AnalizeNews
+from app.exceptions import AIServiceError
 
 
 def create_service(monkeypatch):

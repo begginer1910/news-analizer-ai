@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from logging_config import setup_logging
+from app.logging_config import setup_logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .jobs import run_news_job
 from .scheduler_config_service import SchedulerConfigService
-from database import Database
+from app.database import Database
 
 setup_logging()
 

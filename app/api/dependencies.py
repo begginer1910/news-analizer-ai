@@ -1,6 +1,6 @@
-from database import Database
-from news_service import AnalizeNews
-from auxiliary_functions import Auxiliary
+from app.database import Database
+from app.services.news_service import AnalizeNews
+from app.auxiliary_functions import Auxiliary
 
 _database: Database | None = None
 _service: AnalizeNews | None = None

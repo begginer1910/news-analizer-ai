@@ -1,7 +1,7 @@
 import respx
 import pytest
-from api_client import NewsApiClient
-from exceptions import NewsAPIError
+from app.services.news_api_client import NewsApiClient
+from app.exceptions import NewsAPIError
 
 
 async def simulate_api_response(respx_mock, status_code, response_data):

@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler
-from news_service import AnalizeNews
-from auxiliary_functions import Auxiliary
+from app.services.news_service import AnalizeNews
+from app.auxiliary_functions import Auxiliary
 import logging
 logger = logging.getLogger(__name__)
 CATEGORY, LANGUAGE, COUNTRY = range(3)

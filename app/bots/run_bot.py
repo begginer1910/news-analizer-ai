@@ -1,9 +1,9 @@
-from logging_config import setup_logging
+from app.logging_config import setup_logging
 setup_logging()
-from config import Config
-from auxiliary_functions import Auxiliary
-from news_service import AnalizeNews
-from telegram_bot import TelegramBot
+from app.config import Config
+from app.auxiliary_functions import Auxiliary
+from app.services.news_service import AnalizeNews
+from app.bots.telegram_bot import TelegramBot
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,11 @@ class MainBot:
         except Exception as e:
             logger.critical(f"Error: {e}")
 
-if __name__ == "__main__":
+def main():
     try:
-        MainBot().run_bot()
+        (MainBot().run_bot())
     except ValueError as e:
-        logger.error(f"Error: {e}")
+        logging.error(f"Error: {e}")
         exit(1)
+if __name__ == "__main__":
+    main()

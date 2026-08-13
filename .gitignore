@@ -9,3 +9,6 @@ __pycache__/
 AGENTS.md
 .vscode
 repomix-output.xml
+build/
+*.egg-info/
+moje_dane/

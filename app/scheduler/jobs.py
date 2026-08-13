@@ -1,5 +1,5 @@
 import logging
-from news_service import AnalizeNews
+from app.services.news_service import AnalizeNews
 
 logger = logging.getLogger(__name__)
 

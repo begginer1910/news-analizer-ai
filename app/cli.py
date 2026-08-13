@@ -1,8 +1,8 @@
-from logging_config import setup_logging
+from app.logging_config import setup_logging
 setup_logging()
 import asyncio
-from auxiliary_functions import Auxiliary
-from news_service import AnalizeNews
+from app.auxiliary_functions import Auxiliary
+from app.services.news_service import AnalizeNews
 import logging
 logger = logging.getLogger(__name__)
 
@@ -45,10 +45,11 @@ class Main:
                     print(f"{r['status']}: {r['title']}")
                     logger.info(f"Result: {r['status']} - {r['title']}")
 
-
-if __name__ == "__main__":
+def main():
     try:
         asyncio.run(Main().summation())
     except ValueError as e:
         logging.error(f"Error: {e}")
         exit(1)
+if __name__ == "__main__":
+    main()

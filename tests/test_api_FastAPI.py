@@ -1,9 +1,9 @@
 import pytest
 import httpx
-from api.app import create_app
-from api.dependencies import get_db, get_helper, get_service
+from app.api.app import create_app
+from app.api.dependencies import get_db, get_helper, get_service
 from unittest.mock import AsyncMock, MagicMock
-from auxiliary_functions import Auxiliary
+from app.auxiliary_functions import Auxiliary
 
 mock_config = MagicMock()
 mock_config.DB_PATH = ":memory:"

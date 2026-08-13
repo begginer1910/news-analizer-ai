@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-import Scheduler.jobs as jobs
+import app.scheduler.jobs as jobs
 
 @pytest.mark.asyncio
 async def test_run_news_job_calls_start_and_returns_results(monkeypatch):

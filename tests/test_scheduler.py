@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-import Scheduler.scheduler as sched
+import app.scheduler.scheduler as sched
 
 @pytest.mark.asyncio
 async def test_create_scheduler_uses_interval_from_config():

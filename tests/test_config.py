@@ -1,5 +1,5 @@
 import pytest
-from config import Config, ALLOWED_INTERVALS_H
+from app.config import Config, ALLOWED_INTERVALS_H
 
 def test_allowed_intervals_h_constant():
     assert ALLOWED_INTERVALS_H == (12, 24)

@@ -1,13 +1,14 @@
+import uvicorn
 from fastapi import FastAPI
-from news_service import AnalizeNews
-from auxiliary_functions import Auxiliary
-from database import Database
-from config import Config
+from app.services.news_service import AnalizeNews
+from app.auxiliary_functions import Auxiliary
+from app.database import Database
+from app.config import Config
 from contextlib import asynccontextmanager
 from .dependencies import init_deps
 from .routes import router
 import asyncio
-from Scheduler.scheduler import start_scheduler
+from app.scheduler.scheduler import start_scheduler
 
 def create_app(config=None):
     conf = config or Config()
@@ -25,3 +26,5 @@ def create_app(config=None):
     app = FastAPI(lifespan=lifespan)
     app.include_router(router)
     return app
+if __name__ == "__main__":
+    uvicorn.run("app.api.app:create_app", factory=True, reload=True)

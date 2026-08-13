@@ -1,8 +1,8 @@
-from database import Database
-from api_client import NewsApiClient
-from ai_service import Groq_ai
-from config import Config
-from exceptions import NewsAPIError, AIServiceError
+from app.database import Database
+from .news_api_client import NewsApiClient
+from .ai_service import Groq_ai
+from app.config import Config
+from app.exceptions import NewsAPIError, AIServiceError
 import logging
 logger = logging.getLogger(__name__)
 

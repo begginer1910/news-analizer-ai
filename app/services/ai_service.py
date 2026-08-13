@@ -1,7 +1,7 @@
 import json
 from groq import AsyncGroq 
 from groq import (APIConnectionError, APITimeoutError, RateLimitError, InternalServerError, APIError)
-from exceptions import AIServiceError
+from app.exceptions import AIServiceError
 import logging
 logger = logging.getLogger(__name__)
 

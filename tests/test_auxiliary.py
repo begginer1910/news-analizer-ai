@@ -1,5 +1,5 @@
 import pytest
-from auxiliary_functions import Auxiliary
+from app.auxiliary_functions import Auxiliary
 
 
 @pytest.mark.parametrize("input_language, expected",[

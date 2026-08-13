@@ -2,8 +2,8 @@ import pytest
 import httpx
 import respx
 import json
-from ai_service import Groq_ai
-from exceptions import AIServiceError
+from app.services.ai_service import Groq_ai
+from app.exceptions import AIServiceError
 
 
 @pytest.mark.asyncio

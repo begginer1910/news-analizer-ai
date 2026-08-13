@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from Scheduler.scheduler_config_service import SchedulerConfigService
+from app.scheduler.scheduler_config_service import SchedulerConfigService
 
 @pytest.mark.asyncio
 async def test_get_returns_mapped_dict():
