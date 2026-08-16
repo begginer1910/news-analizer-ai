@@ -43,6 +43,7 @@ class Database:
         if self.conn is not None:
             return
         self.conn = await aiosqlite.connect(self.db_path)
+        self.conn.row_factory = aiosqlite.Row
         await self._create_scheduler_config_table()
         await self.conn.execute("""
             INSERT OR IGNORE INTO scheduler_config (id, category, language, country, interval_h)
