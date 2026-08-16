@@ -47,7 +47,7 @@ class Groq_ai:
             return result
         except(APIConnectionError, APITimeoutError) as exc:
             logger.error("Groq connection/timeout error: %s", type(exc).__name__)
-            raise AIServiceError(f"Network error: {exc}") from exc
+            raise AIServiceError(f"Network error: {type(exc).__name__}") from exc
         except RateLimitError as exc:
             logger.warning("Groq rate limit exceeded: %s", type(exc).__name__)
             raise AIServiceError("Rate limit exceeded - try again later") from exc
@@ -56,7 +56,7 @@ class Groq_ai:
             raise AIServiceError("AI service internal error") from exc
         except APIError as exc:
             logger.error("Groq API error: %s", type(exc).__name__)
-            raise AIServiceError(f"AI API error: {exc}") from exc
+            raise AIServiceError(f"AI API error: {type(exc).__name__}") from exc
         except ValueError as exc:
             logger.error("Invalid AI response structure: %s", type(exc).__name__)
             raise AIServiceError("AI response missing required data") from exc

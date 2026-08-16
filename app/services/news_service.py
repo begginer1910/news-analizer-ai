@@ -7,8 +7,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class AnalizeNews:
-    def __init__(self, database: Database | None = None):
-        conf = Config()
+    def __init__(self, database: Database | None = None, config:Config | None = None):
+        conf = config or Config()
         self.news_client = NewsApiClient(conf.NEWS_API_KEY)
         self.ai = Groq_ai(conf.GROQ_API_KEY)
         self.data = database or Database(conf.DB_PATH)

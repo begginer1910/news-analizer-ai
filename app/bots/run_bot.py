@@ -17,7 +17,7 @@ class MainBot:
         try:
             self.telegram_bot.run()
         except Exception as e:
-            logger.critical(f"Error: {e}")
+            logger.critical("Error: %s", type(e).__name__)
 
 def main():
     try:
