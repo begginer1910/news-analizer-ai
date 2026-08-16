@@ -20,11 +20,11 @@ class NewsApiClient:
                       if isinstance(exc, NewsAPIError):
                            raise
                       if not self.helper.is_retryable(exc):
-                        raise NewsAPIError(str(exc)) from exc
-                      logger.warning(f"Attempt: {attempt + 1}/{self.max_retries + 1}, failed:{exc}")
+                        raise NewsAPIError(f"NewsAPI request failed: {type(exc).__name__}") from exc
+                      logger.warning(f"Attempt: {attempt + 1}/{self.max_retries + 1}, failed: {type(exc).__name__}")
                       if attempt == self.max_retries:
                           logger.error("All retry attempts exhausted")
-                          raise NewsAPIError(str(exc)) from exc
+                          raise NewsAPIError(f"NewsAPI request failed: {type(exc).__name__}") from exc
                       delay = min(self.base_delay * (2 ** attempt) + random.uniform(0,1), self.max_delay)
                       await asyncio.sleep(delay)   
     async def get_news(self,selected_category,selected_language,selected_country):

@@ -46,22 +46,22 @@ class Groq_ai:
                 raise ValueError("AI response missing required fields")
             return result
         except(APIConnectionError, APITimeoutError) as exc:
-            logger.error(f"Groq connection/timeout error: {exc}")
+            logger.error("Groq connection/timeout error: %s", type(exc).__name__)
             raise AIServiceError(f"Network error: {exc}") from exc
         except RateLimitError as exc:
-            logger.warning(f"Groq rate limit exceeded: {exc}")
+            logger.warning("Groq rate limit exceeded: %s", type(exc).__name__)
             raise AIServiceError("Rate limit exceeded - try again later") from exc
         except InternalServerError as exc:
-            logger.error(f"Groq internal server error: {exc}")
+            logger.error("Groq internal server error: %s", type(exc).__name__)
             raise AIServiceError("AI service internal error") from exc
         except APIError as exc:
-            logger.error(f"Groq API error: {exc}")
+            logger.error("Groq API error: %s", type(exc).__name__)
             raise AIServiceError(f"AI API error: {exc}") from exc
         except ValueError as exc:
-            logger.error(f"Invalid AI response structure: {exc}")
+            logger.error("Invalid AI response structure: %s", type(exc).__name__)
             raise AIServiceError("AI response missing required data") from exc
         except Exception as exc:
-            logger.critical(f"Unexpected error in AI service: {exc}", exc_info=True)
+            logger.critical("Unexpected error in AI service: %s", type(exc).__name__, exc_info=True)
             raise AIServiceError(f"Unexpected error in: {exc}") from exc
         
 
