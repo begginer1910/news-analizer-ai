@@ -14,7 +14,7 @@ async def test_summarize_via_http(respx_mock):
         }
     )
     ai = Groq_ai("dummy_key")
-    result = await ai.summarize("test title", "test description", "english")
+    result = await ai.summarize("test title", "test description","test content", "english")
     assert result["summary"] == "ok"
 
 
@@ -25,7 +25,7 @@ async def test_wrong_json(respx_mock):
     )
     ai = Groq_ai("dummy_key")
     with pytest.raises(AIServiceError) as excinfo:
-        await ai.summarize("test title", "test description", "english")
+        await ai.summarize("test title", "test description","test content", "english")
     assert isinstance(excinfo.value.__cause__, ValueError)
     assert "AI response missing required data" in str(excinfo.value)
 
@@ -41,7 +41,7 @@ async def test_no_summary_or_sentiment(respx_mock, content, missing_key):
     )
     ai = Groq_ai("dummy_key")
     with pytest.raises(AIServiceError) as excinfo:
-        await ai.summarize("test title", "test description", "english")
+        await ai.summarize("test title", "test description","test content","english")
     
     assert isinstance(excinfo.value.__cause__, ValueError)
     assert "AI response missing required data" in str(excinfo.value)
@@ -60,7 +60,7 @@ async def test_network_error(respx_mock, status_code, side_effect, expected_msg)
         route.respond(status_code=status_code)
     ai = Groq_ai("dummy_key")
     with pytest.raises(AIServiceError) as excinfo:
-        await ai.summarize("test title", "test description", "english")
+        await ai.summarize("test title", "test description","test content", "english")
     assert expected_msg in str(excinfo.value)
 
     if side_effect:  
@@ -80,7 +80,7 @@ async def test_empty_input_data(respx_mock):
         }
     )
     ai = Groq_ai("dummy_key")
-    result = await ai.summarize("", "", "")
+    result = await ai.summarize("", "", "", "")
     assert result["summary"] == ""
     assert result["sentiment"] == 0
 
@@ -93,7 +93,7 @@ async def test_check_prompt(respx_mock):
                 }
     )
     ai = Groq_ai("dummy_key")
-    await ai.summarize("test title", "test description", "english")
+    await ai.summarize("test title", "test description","test content", "english")
     request = route.calls.last.request
     body = request.content.decode()
     body_dict = json.loads(body)

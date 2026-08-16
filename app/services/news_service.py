@@ -29,6 +29,7 @@ class AnalizeNews:
             ai_result = await self.ai.summarize(
                 article.get('title'),
                 article.get('description'),
+                article.get('content'),
                 language,
             )
             data = {
