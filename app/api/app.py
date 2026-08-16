@@ -9,11 +9,12 @@ from .dependencies import init_deps
 from .routes import router
 import asyncio
 from app.scheduler.scheduler import start_scheduler
+import os
 
 def create_app(config=None):
-    conf = config or Config()
+    conf = config or Config(require_telegram=False)
     data = Database(conf.DB_PATH)
-    service = AnalizeNews()
+    service = AnalizeNews(config=conf)
     helper = Auxiliary()
     init_deps(data, service, helper)
 
@@ -27,4 +28,5 @@ def create_app(config=None):
     app.include_router(router)
     return app
 if __name__ == "__main__":
-    uvicorn.run("app.api.app:create_app", factory=True, reload=True)
+    reload = os.getenv("APP_ENV", "production") == "development"
+    uvicorn.run("app.api.app:create_app", factory=True, reload=reload)
