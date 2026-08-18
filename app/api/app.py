@@ -1,5 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from app.services.news_service import AnalizeNews
 from app.auxiliary_functions import Auxiliary
 from app.database import Database
@@ -23,9 +25,23 @@ def create_app(config=None):
         await data.initialize()
         task = asyncio.create_task(start_scheduler(data, service))
         yield
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
         await data.conn.close()
+        data.conn = None
     app = FastAPI(lifespan=lifespan)
     app.include_router(router)
+
+    static_dir = os.path.join(os.path.dirname(__file__), "static", "frontend")
+    app.mount("/frontend", StaticFiles(directory=static_dir, html=True), name="frontend")
+
+    @app.get("/")
+    async def root():
+        return RedirectResponse(url="/frontend/index.html")
+
     return app
 if __name__ == "__main__":
     reload = os.getenv("APP_ENV", "production") == "development"
