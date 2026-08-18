@@ -3,10 +3,9 @@ from app.services.news_service import AnalizeNews
 
 logger = logging.getLogger(__name__)
 
-async def run_news_job(category, language, country):
+async def run_news_job(category, language, country, service:AnalizeNews):
     logger.info("Starting the news task: %s/%s/%s", category, language, country)
-    analize = AnalizeNews()
-    results = await analize.start(
+    results = await service.start(
         category=category,
         language=language,
         country=country,

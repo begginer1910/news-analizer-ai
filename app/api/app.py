@@ -21,7 +21,7 @@ def create_app(config=None):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await data.initialize()
-        asyncio.create_task(start_scheduler(data))
+        task = asyncio.create_task(start_scheduler(data, service))
         yield
         await data.conn.close()
     app = FastAPI(lifespan=lifespan)
