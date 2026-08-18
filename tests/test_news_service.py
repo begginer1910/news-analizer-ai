@@ -103,8 +103,9 @@ async def test_proces_article_ai_error(monkeypatch):
     result = await service.proces_article(article, "general", "en", "us")
 
     assert result["title"] == "Test"
+    assert result["summary"] == ""
+    assert result["sentiment"] == 0
     assert result["status"] == "error"
-    assert result["error"] == "The message could not be processed. Please try again later."
     service.data.add_article.assert_not_awaited()
 
 

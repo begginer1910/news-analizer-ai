@@ -52,20 +52,23 @@ class AnalizeNews:
         except NewsAPIError as e:
             logger.warning("NewsAPI error processed: %s", type(e).__name__)
             return {"title": article.get('title', 'unknown'),
+                    "summary": "",
+                    "sentiment": 0,
                     "status": "error",
-                    "error": "Failed to retrieve messages from the source. Please try again later."                   
                     }
         except AIServiceError as e:
             logger.warning("AI service error processsed: %s", type(e).__name__)
             return {
                 "title": article.get('title', 'unknown'),
+                "summary": "",
+                "sentiment": 0,
                 "status": "error",
-                "error":"The message could not be processed. Please try again later."
             }
         except Exception as e:
             logger.error("Unexpected error processing article: %s", type(e).__name__, exc_info=True)
             return {
                 "title": article.get('title', 'unknown'),
+                "summary": "",
+                "sentiment": 0,
                 "status": "error",
-                "error": "An unexpected error occurred. Please contact the administrator.",
             }
