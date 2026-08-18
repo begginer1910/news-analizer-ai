@@ -20,3 +20,6 @@ def setup_logging():
         handlers=handlers,
         force=True
     )
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("groq").setLevel(logging.WARNING)
