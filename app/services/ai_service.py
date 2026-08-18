@@ -28,7 +28,7 @@ class Groq_ai:
         )
         try:
             chat_completion = await self.client.chat.completions.create(
-                model = "llama-3.1-8b-instant",
+                model = "openai/gpt-oss-20b",
                 messages = [
                 {
                     "role" : "system",

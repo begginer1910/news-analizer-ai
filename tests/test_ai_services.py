@@ -97,7 +97,7 @@ async def test_check_prompt(respx_mock):
     request = route.calls.last.request
     body = request.content.decode()
     body_dict = json.loads(body)
-    assert body_dict["model"] == "llama-3.1-8b-instant"
+    assert body_dict["model"] == "openai/gpt-oss-20b"
     assert body_dict["response_format"]["type"] == "json_object"
     assert body_dict["messages"][0]["role"] == "system"
     assert body_dict["messages"][0]["content"] == "You are a news editor"
