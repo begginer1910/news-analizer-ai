@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export - News Analyzer</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-header__title">Export CSV</h1>
+      <p class="page-header__desc">Download your stored articles as a CSV file.</p>
+    </div>
+
+    <div class="card">
+      <form id="export-form" style="display:flex;flex-direction:column;gap:0.25rem;">
+        <div class="form-group">
+          <label class="form-label">Category (optional)</label>
+          <div id="category-input"></div>
+          <div class="form-hint">Leave empty to export all categories.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Limit</label>
+          <input type="number" id="limit-input" class="text-input" value="20" min="1" max="1000" placeholder="20">
+          <div class="form-hint">Maximum number of articles to export (min 1).</div>
+        </div>
+        <div>
+          <button type="submit" id="export-btn" class="btn btn--primary">Export CSV</button>
+        </div>
+        <div id="export-msg" class="inline-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/frontend/app.js"></script>
+  <script>
+    initNav('export');
+
+    let categoryCb;
+
+    (async function init() {
+      const msgEl = document.getElementById('export-msg');
+      try {
+        const categories = await apiGet('/api/categories');
+        categoryCb = createCombobox(document.getElementById('category-input'), {
+          placeholder: 'All categories',
+        });
+        categoryCb.setItems(
+          categories.map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1), searchKey: c }))
+        );
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to load categories.', 'error');
+      }
+    })();
+
+    document.getElementById('export-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('export-msg');
+      const btn = document.getElementById('export-btn');
+      clearInlineMsg(msgEl);
+
+      const category = categoryCb ? categoryCb.getValue() : null;
+      const limitInput = document.getElementById('limit-input');
+      const limit = parseInt(limitInput.value, 10);
+
+      if (!limit || limit < 1) {
+        showInlineMsg(msgEl, 'Please enter a valid limit (minimum 1).', 'warning');
+        return;
+      }
+
+      setLoading(btn, true);
+      try {
+        let url = '/api/export/csv?limit=' + encodeURIComponent(limit);
+        if (category) {
+          url += '&category=' + encodeURIComponent(category);
+        }
+        const res = await apiFetch(url);
+        const blob = await res.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'articles.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        showInlineMsg(msgEl, 'CSV file downloaded successfully.', 'success');
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to export: ' + err.message, 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

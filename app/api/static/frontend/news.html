@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch News - News Analyzer</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-header__title">Fetch News</h1>
+      <p class="page-header__desc">Select criteria and fetch the latest articles from NewsAPI.</p>
+    </div>
+
+    <div class="info-box">
+      <strong>NewsAPI Free Plan Limitations</strong>
+      The free plan only returns articles from the last 24 hours and is limited to 100 requests per day.
+      Articles from some sources may be unavailable. For full access, consider upgrading your NewsAPI plan.
+    </div>
+
+    <div class="card">
+      <form id="fetch-form" style="display:flex;flex-direction:column;gap:0.25rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div id="category-input"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <div id="language-input"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <div id="country-input"></div>
+        </div>
+        <div>
+          <button type="submit" id="fetch-btn" class="btn btn--primary">Fetch News</button>
+        </div>
+        <div id="fetch-msg" class="inline-msg"></div>
+      </form>
+    </div>
+
+    <div id="results-section" style="margin-top:1.5rem;"></div>
+  </div>
+
+  <script src="/frontend/app.js"></script>
+  <script>
+    initNav('news');
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    let categoryCb, languageCb, countryCb;
+
+    (async function init() {
+      const msgEl = document.getElementById('fetch-msg');
+      try {
+        const [categories, languages, countries] = await Promise.all([
+          apiGet('/api/categories'),
+          apiGet('/api/languages'),
+          apiGet('/api/countries'),
+        ]);
+
+        categoryCb = createCombobox(document.getElementById('category-input'), {
+          placeholder: 'Select category...',
+        });
+        categoryCb.setItems(
+          categories.map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1), searchKey: c }))
+        );
+
+        languageCb = createCombobox(document.getElementById('language-input'), {
+          placeholder: 'Select language...',
+        });
+        languageCb.setItems(
+          Object.entries(languages).map(([name, code]) => ({
+            value: code,
+            label: name.charAt(0).toUpperCase() + name.slice(1) + ' (' + code + ')',
+            searchKey: name + ' ' + code,
+          }))
+        );
+
+        countryCb = createCombobox(document.getElementById('country-input'), {
+          placeholder: 'Select country...',
+        });
+        countryCb.setItems(
+          Object.entries(countries).map(([name, code]) => ({
+            value: code,
+            label: name.charAt(0).toUpperCase() + name.slice(1) + ' (' + code + ')',
+            searchKey: name + ' ' + code,
+          }))
+        );
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to load options from server. Please try again later.', 'error');
+      }
+    })();
+
+    document.getElementById('fetch-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('fetch-msg');
+      const btn = document.getElementById('fetch-btn');
+      const resultsEl = document.getElementById('results-section');
+      clearInlineMsg(msgEl);
+      resultsEl.innerHTML = '';
+
+      const category = categoryCb ? categoryCb.getValue() : null;
+      const language = languageCb ? languageCb.getValue() : null;
+      const country = countryCb ? countryCb.getValue() : null;
+
+      if (!category || !language || !country) {
+        showInlineMsg(msgEl, 'Please select all three fields: category, language, and country.', 'warning');
+        return;
+      }
+
+      setLoading(btn, true);
+      try {
+        const results = await apiPost('/api/news/fetch', { category, language, country });
+        if (results.length === 0) {
+          resultsEl.innerHTML = '<div class="empty-state">No articles found for the selected criteria. Try different options or check back later.</div>';
+          return;
+        }
+        resultsEl.innerHTML = `
+          <div class="results-count">${results.length} article${results.length !== 1 ? 's' : ''} fetched</div>
+          <div class="articles-grid">
+            ${results.map(a => `
+              <div class="card">
+                <div class="card__header">
+                  <div class="card__title">${escapeHtml(a.title)}</div>
+                  <span class="card__badge ${sentimentClass(a.sentiment)}">${sentimentLabel(a.sentiment)}</span>
+                </div>
+                <div class="card__meta">
+                  <span class="card__badge status--${a.status}">${escapeHtml(a.status)}</span>
+                </div>
+                <div class="card__summary">${escapeHtml(a.summary)}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to fetch news: ' + err.message, 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

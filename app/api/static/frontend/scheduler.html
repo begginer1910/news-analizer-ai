@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheduler - News Analyzer</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-header__title">Scheduler</h1>
+      <p class="page-header__desc">Configure automatic news fetching at regular intervals.</p>
+    </div>
+
+    <div id="current-config" style="margin-bottom:1.5rem;"></div>
+
+    <div class="card">
+      <form id="scheduler-form" style="display:flex;flex-direction:column;gap:0.25rem;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div id="category-input"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <div id="language-input"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <div id="country-input"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interval</label>
+          <div id="interval-input"></div>
+          <div class="form-hint">Select 12 or 24 hours between fetches.</div>
+        </div>
+        <div>
+          <button type="submit" id="save-btn" class="btn btn--primary">Save Configuration</button>
+        </div>
+        <div id="scheduler-msg" class="inline-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/frontend/app.js"></script>
+  <script>
+    initNav('scheduler');
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    let categoryCb, languageCb, countryCb, intervalCb;
+    let currentConfig = null;
+
+    (async function init() {
+      const msgEl = document.getElementById('scheduler-msg');
+      try {
+        const [categories, languages, countries, config] = await Promise.all([
+          apiGet('/api/categories'),
+          apiGet('/api/languages'),
+          apiGet('/api/countries'),
+          apiGet('/api/scheduler/config'),
+        ]);
+
+        currentConfig = config;
+
+        categoryCb = createCombobox(document.getElementById('category-input'), {
+          placeholder: 'Select category...',
+        });
+        categoryCb.setItems(
+          categories.map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1), searchKey: c }))
+        );
+
+        languageCb = createCombobox(document.getElementById('language-input'), {
+          placeholder: 'Select language...',
+        });
+        languageCb.setItems(
+          Object.entries(languages).map(([name, code]) => ({
+            value: code,
+            label: name.charAt(0).toUpperCase() + name.slice(1) + ' (' + code + ')',
+            searchKey: name + ' ' + code,
+          }))
+        );
+
+        countryCb = createCombobox(document.getElementById('country-input'), {
+          placeholder: 'Select country...',
+        });
+        countryCb.setItems(
+          Object.entries(countries).map(([name, code]) => ({
+            value: code,
+            label: name.charAt(0).toUpperCase() + name.slice(1) + ' (' + code + ')',
+            searchKey: name + ' ' + code,
+          }))
+        );
+
+        intervalCb = createCombobox(document.getElementById('interval-input'), {
+          placeholder: 'Select interval...',
+        });
+        intervalCb.setItems([
+          { value: 12, label: 'Every 12 hours', searchKey: '12 hours' },
+          { value: 24, label: 'Every 24 hours', searchKey: '24 hours' },
+        ]);
+
+        if (config) {
+          categoryCb.setValue(config.category);
+          languageCb.setValue(config.language);
+          countryCb.setValue(config.country);
+          intervalCb.setValue(config.interval_h);
+          renderConfigDisplay(config);
+        }
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to load configuration or options.', 'error');
+      }
+    })();
+
+    function renderConfigDisplay(config) {
+      const el = document.getElementById('current-config');
+      el.innerHTML = `
+        <div class="card">
+          <h3 style="font-size:0.9375rem;font-weight:600;margin-bottom:0.75rem;">Current Configuration</h3>
+          <div class="config-display">
+            <div class="config-display__item">
+              <span class="config-display__label">Category</span>
+              <span class="config-display__value">${escapeHtml(config.category)}</span>
+            </div>
+            <div class="config-display__item">
+              <span class="config-display__label">Language</span>
+              <span class="config-display__value">${escapeHtml(config.language)}</span>
+            </div>
+            <div class="config-display__item">
+              <span class="config-display__label">Country</span>
+              <span class="config-display__value">${escapeHtml(config.country)}</span>
+            </div>
+            <div class="config-display__item">
+              <span class="config-display__label">Interval</span>
+              <span class="config-display__value">Every ${config.interval_h} hours</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById('scheduler-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgEl = document.getElementById('scheduler-msg');
+      const btn = document.getElementById('save-btn');
+      clearInlineMsg(msgEl);
+
+      const category = categoryCb ? categoryCb.getValue() : null;
+      const language = languageCb ? languageCb.getValue() : null;
+      const country = countryCb ? countryCb.getValue() : null;
+      const interval_h = intervalCb ? intervalCb.getValue() : null;
+
+      if (!category || !language || !country || !interval_h) {
+        showInlineMsg(msgEl, 'Please fill in all fields.', 'warning');
+        return;
+      }
+
+      setLoading(btn, true);
+      try {
+        const updated = await apiPut('/api/scheduler/config', {
+          category, language, country, interval_h,
+        });
+        currentConfig = updated;
+        renderConfigDisplay(updated);
+        showInlineMsg(msgEl, 'Configuration saved successfully.', 'success');
+      } catch (err) {
+        showInlineMsg(msgEl, 'Failed to save configuration: ' + err.message, 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+  </script>
+</body>
+</html>

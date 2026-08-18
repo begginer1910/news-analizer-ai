@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Analyzer</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-header__title">News Analyzer</h1>
+      <p class="page-header__desc">
+        Fetch news articles from NewsAPI, analyze sentiment with AI, and store them for review.
+        Use the navigation above to fetch new articles, configure automatic scheduling, or export your data.
+      </p>
+    </div>
+
+    <h2 style="font-size:1.125rem;font-weight:600;margin-bottom:1rem;">Latest Articles</h2>
+    <div id="articles-container" class="articles-grid"></div>
+  </div>
+
+  <script src="/frontend/app.js"></script>
+  <script>
+    initNav('index');
+
+    (async function loadArticles() {
+      const container = document.getElementById('articles-container');
+      try {
+        const articles = await apiGet('/api/articles');
+        const items = articles.slice(0, 10);
+        if (items.length === 0) {
+          container.innerHTML = '<div class="empty-state">No articles yet. Fetch some news to get started.</div>';
+          return;
+        }
+        container.innerHTML = items.map(a => `
+          <div class="card">
+            <div class="card__header">
+              <div class="card__title">
+                <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.title)}</a>
+              </div>
+              <span class="card__badge ${sentimentClass(a.sentiment)}">${sentimentLabel(a.sentiment)}</span>
+            </div>
+            <div class="card__meta">
+              <span>${escapeHtml(a.category)}</span>
+              <span>${escapeHtml(a.language)} / ${escapeHtml(a.country)}</span>
+              <span>${formatDate(a.publishedAt)}</span>
+            </div>
+            <div class="card__summary">${escapeHtml(a.summary)}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = '<div class="inline-msg inline-msg--error">Failed to load articles.</div>';
+      }
+    })();
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
