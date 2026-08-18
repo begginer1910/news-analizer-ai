@@ -41,7 +41,11 @@ class Database:
        await self.conn.commit()
     async def initialize(self):
         if self.conn is not None:
-            return
+            try:
+                await self.conn.execute("SELECT 1")
+                return
+            except Exception:
+                self.conn = None
         self.conn = await aiosqlite.connect(self.db_path)
         self.conn.row_factory = aiosqlite.Row
         await self._create_scheduler_config_table()

@@ -57,12 +57,38 @@ async def test_initialize_creates_scheduler_config_table(db):
 @pytest.mark.asyncio
 async def test_initialize_creates_default_config(db):
     row = await db._fetch_scheduler_config_row()
-    assert row == ("general", "en", "us", 24)
+    assert tuple(row) == ("general", "en", "us", 24)
 
 @pytest.mark.asyncio
 async def test_update_scheduler_config_row(db):
     await db._update_scheduler_config_row("technology", "pl", "pl", 12)
     row = await db._fetch_scheduler_config_row()
-    assert row == ("technology", "pl", "pl", 12)
+    assert tuple(row) == ("technology", "pl", "pl", 12)
 
+@pytest.mark.asyncio
+async def test_initialize_reconnects_after_close():
+    database = Database(":memory:")
+    await database.initialize()
+    await database.conn.close()
+    await database.initialize()
+    result = await database.add_article({
+        "title":"Reconnect Test",
+        "url":"https://test.com",
+        "category":"tech",
+        "language":"en",
+        "country":"us",
+        "summary":"Test",
+        "sentiment":1,
+        "publishedAt":"2024-01-01T00:00:00Z",
+    })
+    assert result == "saved"
+    await database.conn.close()
 
+@pytest.mark.asyncio
+async def test_initialize_skips_when_alive():
+    database = Database(":memory:")
+    await database.initialize()
+    original_conn = database.conn
+    await database.initialize()
+    assert database.conn is original_conn
+    await database.conn.close()
