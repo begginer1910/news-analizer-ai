@@ -47,6 +47,7 @@ class Database:
             except Exception:
                 self.conn = None
         self.conn = await aiosqlite.connect(self.db_path)
+        await self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.row_factory = aiosqlite.Row
         await self._create_scheduler_config_table()
         await self.conn.execute("""
