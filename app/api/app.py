@@ -12,6 +12,7 @@ from .routes import router
 import asyncio
 from app.scheduler.scheduler import start_scheduler
 import os
+from app.bots.telegram_bot import TelegramBot
 
 def create_app(config=None):
     conf = config or Config(require_telegram=False)
@@ -23,13 +24,25 @@ def create_app(config=None):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await data.initialize()
-        task = asyncio.create_task(start_scheduler(data, service))
+        scheduler_task = asyncio.create_task(start_scheduler(data, service))
+        bot_task =None
+        if conf.TELEGRAM_API_KEY:
+            bot = TelegramBot(conf.TELEGRAM_API_KEY, service, helper)
+            bot_task = asyncio.create_task(bot.run())
         yield
-        task.cancel()
+        scheduler_task.cancel()
         try:
-            await task
+            await scheduler_task
         except asyncio.CancelledError:
             pass
+
+        if bot_task:
+            bot_task.cancel()
+            try:
+                await bot_task
+            except asyncio.CancelledError:
+                pass
+        await service.news_client.client.aclose()
         await data.conn.close()
         data.conn = None
     app = FastAPI(lifespan=lifespan)

@@ -23,10 +23,16 @@ class TelegramBot:
             fallbacks = [CommandHandler("cancel", self.cancel)]
         )
         self.app.add_handler(conv_handler)
-    def run(self):
+    async def run(self):
         logger.info("Starting Telegram bot polling")
-        self.app.run_polling()
-    async def cancel(self,update: Update, context):
+        await self.app.initialize()
+        await self.app.start()
+        await self.app.updater.start_polling()
+    async def stop(self):
+        await self.app.updater.stop()
+        await self.app.stop()
+        await self.app.shutdown()
+    async def cancel(self, update: Update, context):
         await update.message.reply_text("canceled")
         logger.info("User cancelled the conversation")
         return ConversationHandler.END
