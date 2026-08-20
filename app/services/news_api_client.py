@@ -6,12 +6,14 @@ import asyncio
 import random
 from app.auxiliary_functions import Auxiliary
 class NewsApiClient:
+    URL = "https://newsapi.org/v2/top-headlines"
     def __init__(self, api_key:str):
         self.api_key = api_key
         self.helper = Auxiliary()
         self.max_retries = 3
         self.base_delay = 1.0
         self.max_delay = 10.0
+        self.client = httpx.AsyncClient(timeout=10.0)
     async def _execute_with_retry(self, coro_func):
           for attempt in range(self.max_retries+1):
                 try:
@@ -28,7 +30,6 @@ class NewsApiClient:
                       delay = min(self.base_delay * (2 ** attempt) + random.uniform(0,1), self.max_delay)
                       await asyncio.sleep(delay)   
     async def get_news(self,selected_category,selected_language,selected_country):
-        self.url = "https://newsapi.org/v2/top-headlines"
         params = {
             "apiKey" : self.api_key,
             "category" : selected_category,
@@ -37,13 +38,12 @@ class NewsApiClient:
             "pageSize" : 5
         }
         async def _fetch():
-            async with httpx.AsyncClient() as client:
-                response = await client.get(self.url, params=params)
-                response.raise_for_status()
-                data = response.json()
-                articles = data.get("articles")
-                if not isinstance(articles, list):
-                    raise NewsAPIError("Invalid response structure from NewsAPI")
-                return articles
+            response = await self.client.get(self.URL, params=params)
+            response.raise_for_status()
+            data = response.json()
+            articles = data.get("articles")
+            if not isinstance(articles, list):
+                raise NewsAPIError("Invalid response structure from NewsAPI")
+            return articles
         return await self._execute_with_retry(_fetch)
             
