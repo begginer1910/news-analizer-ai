@@ -1,6 +1,6 @@
 import uvicorn
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.services.news_service import AnalizeNews
 from app.auxiliary_functions import Auxiliary
@@ -12,7 +12,10 @@ from .routes import router
 import asyncio
 from app.scheduler.scheduler import start_scheduler
 import os
-from app.bots.telegram_bot import TelegramBot
+import logging
+from app.exceptions import NewsAPIError
+
+logger = logging.getLogger(__name__)
 
 def create_app(config=None):
     conf = config or Config(require_telegram=False)
@@ -25,28 +28,25 @@ def create_app(config=None):
     async def lifespan(app: FastAPI):
         await data.initialize()
         scheduler_task = asyncio.create_task(start_scheduler(data, service))
-        bot_task =None
-        if conf.TELEGRAM_API_KEY:
-            bot = TelegramBot(conf.TELEGRAM_API_KEY, service, helper)
-            bot_task = asyncio.create_task(bot.run())
         yield
         scheduler_task.cancel()
         try:
             await scheduler_task
         except asyncio.CancelledError:
             pass
-
-        if bot_task:
-            bot_task.cancel()
-            try:
-                await bot_task
-            except asyncio.CancelledError:
-                pass
         await service.news_client.client.aclose()
         await data.conn.close()
         data.conn = None
     app = FastAPI(lifespan=lifespan)
     app.include_router(router)
+
+    @app.exception_handler(NewsAPIError)
+    async def newsapi_error_handler(request: Request, exc: NewsAPIError):
+        logger.error("NewsAPI request failed after retries: %s", exc)
+        return JSONResponse(
+            status_code=502,
+            content={"detail": "Upstream news service unavailable, try again later."},
+        )
 
     static_dir = os.path.join(os.path.dirname(__file__), "static", "frontend")
     app.mount("/frontend", StaticFiles(directory=static_dir, html=True), name="frontend")

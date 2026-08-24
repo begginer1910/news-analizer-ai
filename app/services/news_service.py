@@ -2,7 +2,7 @@ from app.database import Database
 from .news_api_client import NewsApiClient
 from .ai_service import Groq_ai
 from app.config import Config
-from app.exceptions import NewsAPIError, AIServiceError
+from app.exceptions import AIServiceError
 import logging
 logger = logging.getLogger(__name__)
 
@@ -49,13 +49,6 @@ class AnalizeNews:
                 "sentiment": data['sentiment'],
                 "status": status,
             }
-        except NewsAPIError as e:
-            logger.warning("NewsAPI error processed: %s", type(e).__name__)
-            return {"title": article.get('title', 'unknown'),
-                    "summary": "",
-                    "sentiment": 0,
-                    "status": "error",
-                    }
         except AIServiceError as e:
             logger.warning("AI service error processsed: %s", type(e).__name__)
             return {

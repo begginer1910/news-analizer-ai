@@ -4,6 +4,7 @@ from app.api.app import create_app
 from app.api.dependencies import get_db, get_helper, get_service
 from unittest.mock import AsyncMock, MagicMock
 from app.auxiliary_functions import Auxiliary
+from app.exceptions import NewsAPIError
 
 mock_config = MagicMock()
 mock_config.DB_PATH = ":memory:"
@@ -53,6 +54,21 @@ async def test_post_api_news_fetch(client):
     assert response.status_code == 200
     assert response.json() == []
     mock_service.start.assert_awaited_once_with("general", "en", "us")
+
+async def test_post_api_news_fetch_returns_502_when_newsapi_fails(client):
+    original_start = mock_service.start
+    mock_service.start = AsyncMock(side_effect=NewsAPIError("NewsAPI request failed: HTTPStatusError"))
+    try:
+        response = await client.post("/api/news/fetch", json={
+            "category": "general",
+            "language": "en",
+            "country": "us"
+        })
+        assert response.status_code == 502
+        assert response.json() == {"detail": "Upstream news service unavailable, try again later."}
+        mock_service.start.assert_awaited_once_with("general", "en", "us")
+    finally:
+        mock_service.start = original_start
 
 async def test_get_api_export(client):
     mock_database.get_articles = AsyncMock(return_value=[{
