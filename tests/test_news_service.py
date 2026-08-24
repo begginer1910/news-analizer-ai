@@ -1,4 +1,5 @@
 import pytest
+import sqlite3
 from unittest.mock import AsyncMock
 from app.services.news_service import AnalizeNews
 from app.exceptions import AIServiceError
@@ -107,6 +108,26 @@ async def test_proces_article_ai_error(monkeypatch):
     assert result["sentiment"] == 0
     assert result["status"] == "error"
     service.data.add_article.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_proces_article_integrity_error_returns_error(monkeypatch):
+    service = create_service(monkeypatch)
+    service.ai.summarize = AsyncMock(return_value={"summary": "Sum", "sentiment": 1})
+    service.data.add_article = AsyncMock(side_effect=sqlite3.IntegrityError("NOT NULL constraint failed: table_news.summary"))
+
+    article = {
+        "title": "Test",
+        "description": "Desc",
+        "url": "https://test.com",
+        "publishedAt": "2024-01-01",
+    }
+    result = await service.proces_article(article, "general", "en", "us")
+
+    assert result["title"] == "Test"
+    assert result["summary"] == ""
+    assert result["sentiment"] == 0
+    assert result["status"] == "error"
 
 
 @pytest.mark.asyncio

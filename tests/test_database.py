@@ -1,4 +1,5 @@
 import pytest
+import sqlite3
 from app.database import Database
 
 @pytest.fixture
@@ -47,6 +48,14 @@ async def test_add_article_duplicated(db):
     await db.add_article(SAMPLE_DATA)
     result = await db.add_article(SAMPLE_DATA)
     assert result == "duplicated"
+
+@pytest.mark.parametrize("null_field", ["url", "category", "publishedAt"])
+@pytest.mark.asyncio
+async def test_add_article_not_null_violation_is_not_duplicate(db, null_field):
+    data = {**SAMPLE_DATA, null_field: None}
+    with pytest.raises(sqlite3.IntegrityError) as exc_info:
+        await db.add_article(data)
+    assert exc_info.value.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_NOTNULL
 
 @pytest.mark.asyncio
 async def test_initialize_creates_scheduler_config_table(db):

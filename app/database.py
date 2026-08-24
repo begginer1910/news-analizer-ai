@@ -1,3 +1,4 @@
+import sqlite3
 import aiosqlite
 import logging 
 logger = logging.getLogger(__name__)
@@ -83,8 +84,10 @@ class Database:
             await self.conn.commit()
             return "saved"
 
-        except aiosqlite.IntegrityError:
-            return "duplicated"
+        except aiosqlite.IntegrityError as e:
+            if getattr(e, "sqlite_errorcode", None) == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+                return "duplicated"
+            raise
     
     async def get_articles(self, category=None, limit=20):
         if category:
