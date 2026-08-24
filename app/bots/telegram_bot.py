@@ -12,6 +12,7 @@ class TelegramBot:
         self.helper = helper
         self.app = Application.builder().token(token).build()
         self._register_handlers()
+        self._running = False
     def _register_handlers(self):
         conv_handler = ConversationHandler(
             entry_points = [CommandHandler("start", self.start)],
@@ -28,10 +29,17 @@ class TelegramBot:
         await self.app.initialize()
         await self.app.start()
         await self.app.updater.start_polling()
+        self._running = True
     async def stop(self):
-        await self.app.updater.stop()
-        await self.app.stop()
-        await self.app.shutdown()
+        if not self._running:
+            logger.info("Bot was not running - skipping shutdown")
+            return
+        self._running = False
+        for step in (self.app.updater.stop, self.app.stop, self.app.shutdown):
+            try:
+                await step()
+            except Exception:
+                logger.exception("Error during bot shutdown step")
     async def cancel(self, update: Update, context):
         await update.message.reply_text("canceled")
         logger.info("User cancelled the conversation")
