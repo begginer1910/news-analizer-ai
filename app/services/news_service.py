@@ -50,18 +50,17 @@ class AnalizeNews:
                 "status": status,
             }
         except AIServiceError as e:
-            logger.warning("AI service error processsed: %s", type(e).__name__)
-            return {
-                "title": article.get('title', 'unknown'),
-                "summary": "",
-                "sentiment": 0,
-                "status": "error",
-            }
+            logger.warning("AI service error processed: %s", type(e).__name__)
+            return self._error_result(article)
         except Exception as e:
             logger.error("Unexpected error processing article: %s", type(e).__name__, exc_info=True)
-            return {
-                "title": article.get('title', 'unknown'),
-                "summary": "",
-                "sentiment": 0,
-                "status": "error",
-            }
+            return self._error_result(article)
+
+    @staticmethod
+    def _error_result(article):
+        return {
+            "title": article.get("title", "unknown"),
+            "summary": "",
+            "sentiment": 0,
+            "status": "error",
+        }
