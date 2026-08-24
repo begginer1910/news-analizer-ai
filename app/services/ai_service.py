@@ -21,7 +21,7 @@ class Groq_ai:
             f"2. Base the summary ONLY on the text provided above; do not invent facts. "
             f"3. If Content and Description are missing, state briefly that the article body "
             f"is unavailable instead of guessing. "
-            f"4. Evaluate the positivity of the news (1 for positive, 0 for neutral or negative). "
+            f"4. Classify the sentiment of the news (-1 for negative, 0 for neutral, 1 for positive). "
             f"5. Return the response STRICTLY as a JSON object without any formatting blocks "
             f"or additional text. "
             f"Use this exact JSON structure: {{\"summary\": \"your summary here\", \"sentiment\": your_number}}"
@@ -42,8 +42,14 @@ class Groq_ai:
             response_format = {"type": "json_object"}
         )
             result = json.loads(chat_completion.choices[0].message.content)
-            if "summary" not in result or "sentiment" not in result:
+            if not isinstance(result, dict) or "summary" not in result or "sentiment" not in result:
                 raise ValueError("AI response missing required fields")
+            summary = result["summary"]
+            sentiment = result["sentiment"]
+            if not isinstance(summary, str) or not summary.strip():
+                raise ValueError("AI returned invalid summary value")
+            if isinstance(sentiment, bool) or not isinstance(sentiment, int) or sentiment not in (-1, 0, 1):
+                raise ValueError("AI returned invalid sentiment value")
             return result
         except(APIConnectionError, APITimeoutError) as exc:
             logger.error("Groq connection/timeout error: %s", type(exc).__name__)

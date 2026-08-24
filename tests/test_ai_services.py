@@ -48,6 +48,41 @@ async def test_no_summary_or_sentiment(respx_mock, content, missing_key):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("content",[
+    ('{"summary": null, "sentiment": 1}'),
+    ('{"summary": "ok", "sentiment": null}'),
+    ('{"summary": "ok", "sentiment": "positive"}'),
+    ('{"summary": "ok", "sentiment": true}'),
+    ('{"summary": "", "sentiment": 1}'),
+    ('{"summary": "   ", "sentiment": 1}'),
+    ('{"summary": "ok", "sentiment": 7}'),
+    ('["not", "a", "dict"]'),
+    ('5'),
+])
+async def test_invalid_ai_response_values_raise(respx_mock, content):
+    respx_mock.post("https://api.groq.com/openai/v1/chat/completions").respond(
+        json={"choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": content}}]}
+    )
+    ai = Groq_ai("dummy_key")
+    with pytest.raises(AIServiceError) as excinfo:
+        await ai.summarize("test title", "test description","test content","english")
+    assert isinstance(excinfo.value.__cause__, ValueError)
+
+
+@pytest.mark.asyncio
+async def test_negative_sentiment_accepted(respx_mock):
+    respx_mock.post("https://api.groq.com/openai/v1/chat/completions").respond(
+        json={"choices": [{"index": 0, "finish_reason": "stop",
+                           "message": {"role": "assistant", "content": '{"summary": "bad news", "sentiment": -1}'}}]
+              }
+    )
+    ai = Groq_ai("dummy_key")
+    result = await ai.summarize("test title", "test description", "test content", "english")
+    assert result["summary"] == "bad news"
+    assert result["sentiment"] == -1
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("status_code, side_effect, expected_msg",[
     (500, None, "AI service internal error"),
     (None, httpx.TimeoutException("timeout"), "Network error:"),
@@ -76,12 +111,12 @@ async def test_empty_input_data(respx_mock):
     respx_mock.post("https://api.groq.com/openai/v1/chat/completions").respond(
         json={
             "choices": [{"index": 0, "finish_reason": "stop",
-                         "message": {"role": "assistant", "content": '{"summary": "", "sentiment":0}'}}]
+                         "message": {"role": "assistant", "content": '{"summary": "Article body unavailable.", "sentiment":0}'}}]
         }
     )
     ai = Groq_ai("dummy_key")
     result = await ai.summarize("", "", "", "")
-    assert result["summary"] == ""
+    assert result["summary"] == "Article body unavailable."
     assert result["sentiment"] == 0
 
 

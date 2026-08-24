@@ -45,6 +45,23 @@ async def test_get_api_articles(client):
     assert response.status_code == 200
     assert response.json() == []
 
+async def test_get_api_articles_with_null_sentiment(client):
+    null_row = {
+        "id": 1,
+        "title": "Null Sentiment Article",
+        "url": "https://test.com",
+        "category": "general",
+        "language": "en",
+        "country": "us",
+        "summary": "Summary text",
+        "sentiment": None,
+        "publishedAt": "2024-01-01T00:00:00Z",
+    }
+    mock_database.get_articles = AsyncMock(return_value=[null_row])
+    response = await client.get("/api/articles")
+    assert response.status_code == 200
+    assert response.json() == [null_row]  
+
 async def test_post_api_news_fetch(client):
     response = await client.post("/api/news/fetch", json={
         "category": "general",
@@ -125,6 +142,26 @@ async def test_export_csv_accepts_boundary_limits(client):
     assert response_max.status_code == 200
     mock_database.get_articles.assert_any_await(category=None, limit=1)
     mock_database.get_articles.assert_any_await(category=None, limit=1000)
+
+async def test_export_csv_with_null_sentiment(client):
+    mock_database.get_articles = AsyncMock(return_value=[{
+        "id": 1,
+        "title": "Null Sentiment Article",
+        "url": "https://test.com",
+        "category": "general",
+        "language": "en",
+        "country": "us",
+        "summary": "Summary text",
+        "sentiment": None,
+        "publishedAt": "2024-01-01T00:00:00Z",
+    }])
+    response = await client.get("/api/export/csv")
+    assert response.status_code == 200
+    expected_row = (
+        "id,title,url,category,language,country,summary,sentiment,publishedAt\r\n"
+        "1,Null Sentiment Article,https://test.com,general,en,us,Summary text,,2024-01-01T00:00:00Z\r\n"
+    )
+    assert response.text == expected_row
 
 async def test_get_api_scheduler_config(client):
     response = await client.get("/api/scheduler/config")

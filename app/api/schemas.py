@@ -14,7 +14,7 @@ class ArticleResponse(BaseModel):
     language: str
     country: str
     summary: str
-    sentiment: int
+    sentiment: int | None
     publishedAt: str
 
 class FetchResult(BaseModel):
