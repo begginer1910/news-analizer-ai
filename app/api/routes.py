@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from .schemas import FetchRequest, FetchResult, ArticleResponse, SchedulerConfigIn, SchedulerConfigOut
 from .dependencies import get_db, get_service, get_helper
 from app.database import Database
@@ -29,7 +29,7 @@ async def post_news(request:FetchRequest, service:AnalizeNews = Depends(get_serv
     return await service.start(request.category, request.language, request.country)
 
 @router.get("/api/export/csv")
-async def export_csv(category:str | None = None, limit: int = 20, database:Database = Depends(get_db),):
+async def export_csv(category:str | None = None, limit: int = Query(default=20, ge=1, le=1000), database:Database = Depends(get_db),):
     from io import StringIO
     import csv
     from fastapi.responses import StreamingResponse

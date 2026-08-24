@@ -110,6 +110,22 @@ async def test_export_csv_with_category(client):
     assert response.status_code == 200
     mock_database.get_articles.assert_awaited_once_with(category="technology", limit=5)
 
+@pytest.mark.parametrize("invalid_limit", ["-1", "-100", "0", "1001", "abc"])
+async def test_export_csv_rejects_invalid_limit(client, invalid_limit):
+    mock_database.get_articles = AsyncMock(return_value=[])
+    response = await client.get(f"/api/export/csv?limit={invalid_limit}")
+    assert response.status_code == 422
+    mock_database.get_articles.assert_not_awaited()
+
+async def test_export_csv_accepts_boundary_limits(client):
+    mock_database.get_articles = AsyncMock(return_value=[])
+    response_min = await client.get("/api/export/csv?limit=1")
+    response_max = await client.get("/api/export/csv?limit=1000")
+    assert response_min.status_code == 200
+    assert response_max.status_code == 200
+    mock_database.get_articles.assert_any_await(category=None, limit=1)
+    mock_database.get_articles.assert_any_await(category=None, limit=1000)
+
 async def test_get_api_scheduler_config(client):
     response = await client.get("/api/scheduler/config")
     assert response.status_code == 200
