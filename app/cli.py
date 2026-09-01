@@ -1,6 +1,7 @@
 from app.logging_config import setup_logging
 setup_logging()
 import asyncio
+from dotenv import load_dotenv
 from app.auxiliary_functions import Auxiliary
 from app.services.news_service import AnalizeNews
 import logging
@@ -39,13 +40,14 @@ class Main:
         else:
             for r in results:
                 if r["status"] == "error":
-                    print(f"Error: {r.get('error', 'unknown eror')}")
-                    logger.warning(f"Article processing error: {r.get('error')}")
+                    print(f"An error occurred while processing: {r['title']}")
+                    logger.warning("Article processing error: %s", r['title'])
                 else:
                     print(f"{r['status']}: {r['title']}")
                     logger.info(f"Result: {r['status']} - {r['title']}")
 
 def main():
+    load_dotenv()
     try:
         asyncio.run(Main().summation())
     except ValueError as e:
