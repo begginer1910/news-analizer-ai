@@ -1,6 +1,4 @@
-from dotenv import load_dotenv
 import os
-load_dotenv()
 
 ALLOWED_INTERVALS_H = (12, 24)
 
