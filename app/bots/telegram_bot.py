@@ -98,8 +98,7 @@ class TelegramBot:
             else:
                 for r in results:
                     if r["status"] == "error":
-                        error_msg = r.get("error", "An unexpected error occurred.")    
-                        await update.message.reply_text(f"Error: {error_msg}")
+                        await update.message.reply_text(f"An error occurred while processing: {r['title']}")
                         logger.warning("Article result: %s - %s", r['status'], r['title'])
                     else:
                         await update.message.reply_text(f"{r['status']}: {r['title']}")
