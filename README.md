@@ -6,7 +6,7 @@ An application that collects articles from NewsAPI, passes them to an AI for sum
 
 ## DEMO
 
-  [![Watch the demo](screenshots/home_page.png)](docs/demo.mp4)
+  [![Watch the demo](screenshots/home_page.png)](docs/demo_fixed.mp4)
 
 ## FEATURES:
 
