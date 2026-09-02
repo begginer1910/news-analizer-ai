@@ -7,7 +7,7 @@ An application that collects articles from NewsAPI, passes them to an AI for sum
 ## DEMO
 
   [▶ Watch the demo on YouTube](https://www.youtube.com/watch?v=c3rnn490QUU)
-  
+
 ## FEATURES:
 
 - **Homepage** - shows the five most recent articles; clicking one opens the full article.
@@ -42,8 +42,7 @@ The free NewsAPI tier has restrictions:
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/begginer1910/news-analizer-ai
-    cd news-analizer-ai
+    git clone https://github.com/begginer1910/news-analizer-ai && cd news-analizer-ai
     ```
 
 2. Create `.env` from the template and fill in your keys:
