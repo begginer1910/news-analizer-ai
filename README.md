@@ -6,8 +6,8 @@ An application that collects articles from NewsAPI, passes them to an AI for sum
 
 ## DEMO
 
-  [![Watch the demo](screenshots/home_page.png)](docs/demo_fixed.mp4)
-
+  [▶ Watch the demo on YouTube](https://www.youtube.com/watch?v=c3rnn490QUU)
+  
 ## FEATURES:
 
 - **Homepage** - shows the five most recent articles; clicking one opens the full article.
